@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shotgun Surgery</title>
+<style>
+:root{
+  --bg:#f6f5f1; --card:#ffffff; --ink:#1d1d1f; --muted:#5f6368; --line:#e2e0da;
+  --accent:#b4471f; --accent-soft:#f6e3da; --ok:#1f7a4d; --ok-soft:#dff1e7;
+  --bad:#a12b2b; --bad-soft:#f7dede; --warn:#8a5a00; --warn-soft:#fbefd2; --code-bg:#f1efe9;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16171a; --card:#1f2024; --ink:#ececec; --muted:#a3a6ad; --line:#33353b;
+    --accent:#ef8a5d; --accent-soft:#3a2419; --ok:#5fcf98; --ok-soft:#173326;
+    --bad:#f08080; --bad-soft:#3a1d1d; --warn:#f2c262; --warn-soft:#3a2e14; --code-bg:#17181b;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16171a; --card:#1f2024; --ink:#ececec; --muted:#a3a6ad; --line:#33353b;
+  --accent:#ef8a5d; --accent-soft:#3a2419; --ok:#5fcf98; --ok-soft:#173326;
+  --bad:#f08080; --bad-soft:#3a1d1d; --warn:#f2c262; --warn-soft:#3a2e14; --code-bg:#17181b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+.deck{height:100%;display:flex;flex-direction:column}
+.stage{flex:1;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;padding:40px 56px 24px;display:none;flex-direction:column;overflow:auto}
+.slide.on{display:flex}
+.kicker{color:var(--accent);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:13px;margin:0 0 6px}
+h1{font-size:58px;line-height:1.05;margin:0 0 14px;letter-spacing:-.02em}
+h2{font-size:32px;margin:0 0 18px;letter-spacing:-.01em}
+h3{font-size:18px;margin:0 0 8px}
+p{margin:0 0 10px}
+.muted{color:var(--muted)}
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.card ul,.card ol{margin:0;padding-left:20px}
+.card li{margin:3px 0}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:14px}
+.quote{font-size:22px;border-left:4px solid var(--accent);padding:4px 0 4px 16px;margin:10px 0 22px}
+pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow:auto;white-space:pre}
+code{font:0.92em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.lbl{font-size:13px;font-weight:700;margin:0 0 6px}
+.lbl.bad{color:var(--bad)} .lbl.ok{color:var(--ok)}
+.rep{background:var(--warn-soft);color:var(--warn)}
+.bug{background:var(--bad-soft);color:var(--bad);font-weight:700}
+.add{background:var(--ok-soft);color:var(--ok)}
+.cm{color:var(--muted)}
+.file{font:12px ui-monospace,Menlo,monospace;color:var(--muted);margin-bottom:6px}
+.note{font-size:14px;color:var(--muted);margin-top:auto;padding-top:12px}
+.time{position:absolute;top:14px;right:20px;font-size:12px;color:var(--muted)}
+.bar{display:flex;align-items:center;gap:12px;padding:10px 20px;border-top:1px solid var(--line);background:var(--card)}
+.bar button{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
+.bar button:hover{border-color:var(--accent)}
+.dots{display:flex;gap:6px;flex:1;justify-content:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dot.on{background:var(--accent)}
+.files{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:6px}
+.fbox{border:1px dashed var(--accent);border-radius:8px;padding:8px;font:12px ui-monospace,Menlo,monospace;text-align:center}
+.fbox b{display:block;color:var(--accent);font-size:20px}
+.stat{font-size:40px;font-weight:800;color:var(--accent);line-height:1}
+.legend{display:flex;gap:14px;font-size:13px;margin-top:8px;flex-wrap:wrap}
+.legend span{padding:1px 8px;border-radius:4px}
+@media (max-width:760px){
+  body{overflow:auto}
+  .slide{padding:28px 16px 16px}
+  h1{font-size:38px} h2{font-size:24px}
+  .g2,.g3,.files{grid-template-columns:1fr}
+}
+.big{font-size:26px;line-height:1.35}
+</style>
+</head>
+<body>
+<div class="deck">
+<div class="stage">
+
+<!-- 1 -->
+<section class="slide on" data-t="0:00">
+  <p class="kicker">Code smell</p>
+  <h1>Shotgun<br>Surgery</h1>
+  <p><span class="tag">Change Preventers</span></p>
+  <p class="quote">Un cambio, muchos sitios que tocar.</p>
+  <p class="muted">Tratamiento: Move Field + Move Method · Ejemplo: SmartParts (Allplan, GDL)</p>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-t="0:15">
+  <p class="kicker">Definición</p>
+  <h2>Síntoma y causa</h2>
+  <div class="grid g2">
+    <div class="card"><h3>Síntoma</h3><p class="muted" style="margin:0">Un cambio pequeño exige muchas ediciones repartidas, y es fácil olvidar alguna.</p></div>
+    <div class="card"><h3>Causa</h3><p class="muted" style="margin:0">Copiar y pegar: un dato o comportamiento sin un único dueño.</p></div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <p style="margin:0 0 6px"><b>Safata:</b> mover los agujeros de la pletina = editar <b>8 bloques</b></p>
+    <div class="files">
+      <div class="fbox"><b>1</b>izq. l.31</div><div class="fbox"><b>2</b>izq. l.36</div>
+      <div class="fbox"><b>3</b>izq. l.41</div><div class="fbox"><b>4</b>izq. l.46</div>
+      <div class="fbox"><b>5</b>der. l.77</div><div class="fbox"><b>6</b>der. l.82</div>
+      <div class="fbox"><b>7</b>der. l.87</div><div class="fbox"><b>8</b>der. l.92</div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-t="0:35">
+  <p class="kicker">Tratamiento · 2 pasos</p>
+  <h2>Move Field → Move Method</h2>
+  <div class="grid g2">
+    <div class="card">
+      <h3>① Move Field</h3>
+      <p class="muted">Motivación: el dato está repetido o lejos de quien lo usa.</p>
+      <ol>
+        <li>Crear el campo en el destino.</li>
+        <li>Redirigir las referencias.</li>
+        <li>Borrar el original.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>② Move Method</h3>
+      <p class="muted">Motivación: el comportamiento está repartido.</p>
+      <ol>
+        <li>Crear el método en el destino.</li>
+        <li>Sustituir cada copia por una llamada.</li>
+        <li>Borrar las copias.</li>
+      </ol>
+    </div>
+  </div>
+  <p style="margin-top:16px"><b>Beneficio:</b> un solo dueño → un cambio, un sitio. <span class="muted">Primero el dato, luego el comportamiento que lo usa.</span></p>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-t="1:00">
+  <p class="kicker">Ejemplo · Antes</p>
+  <h2>4 bloques por lado, ×2 lados</h2>
+  <div class="file">Safata/5. 3D Script.txt · líneas 76-96</div>
+<pre>GROUP "forats_dreta"
+   TRANS 0.05, llargada_caixa, <span class="rep">0.01 + gruix_metall + altura_caixa_suport_dret + gruix_metall_suport + 0.2</span> - 0.05
+   ROTX 270
+   CYLIND gruix_metall_suport, diam_forats/1000
+   RESTORE 2
+
+   TRANS 0.15, llargada_caixa, <span class="rep">0.01 + gruix_metall + altura_caixa_suport_dret + gruix_metall_suport + 0.2</span> - 0.05
+   ROTX 270
+   CYLIND gruix_metall_suport, diam_forats/1000
+   RESTORE 2
+
+   <span class="cm">… 2 bloques más …</span>
+GROUP_END
+<span class="cm">… y otros 4 iguales en "forats_esquerra"</span></pre>
+  <div class="legend"><span class="rep">altura repetida en cada bloque</span></div>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-t="1:25">
+  <p class="kicker">Ejemplo · Después</p>
+  <h2>Un dato y un método</h2>
+  <div class="grid g2">
+    <div>
+      <p class="lbl ok">① Move Field</p>
+<pre><span class="add">h_esq = 0.01 + gruix_metall + altura_caixa_suport_esquerra
+        + gruix_metall_suport + 0.2
+h_dre = 0.01 + gruix_metall + altura_caixa_suport_dret
+        + gruix_metall_suport + 0.2</span></pre>
+      <p class="lbl ok" style="margin-top:14px">Cada lado solo llama</p>
+<pre>GROUP "forats_dreta"
+   <span class="add">fy = llargada_caixa
+   h = h_dre
+   frot = 270
+   GOSUB "Forats_pletina"</span>
+GROUP_END</pre>
+    </div>
+    <div>
+      <p class="lbl ok">② Move Method</p>
+<pre><span class="add">"Forats_pletina":     <span class="cm">! fy, h, frot</span>
+   fx = 0.05
+   fz = h - 0.05
+   GOSUB "Forat"
+   fx = 0.15
+   GOSUB "Forat"
+   fz = h - 0.15
+   GOSUB "Forat"
+   fx = 0.05
+   GOSUB "Forat"
+RETURN
+
+"Forat":
+   TRANS fx , fy , fz
+   ROTX frot
+   CYLIND gruix_metall_suport , diam_forats / 1000
+   RESTORE 2
+RETURN</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-t="1:45">
+  <p class="kicker">Conclusión</p>
+  <h2>8 ediciones → 1</h2>
+  <p class="big">Si un cambio te obliga a recorrer el código, dale a ese dato y a ese comportamiento <b>un solo dueño</b>.</p>
+  <p class="note">GDL no tiene clases: <code>GOSUB</code> hace de método y las variables, de campos.<br>Fuentes: refactoring.guru/smells/shotgun-surgery · M. Fowler, <i>Refactoring</i>, 2.ª ed. (2018).</p>
+</section>
+
+</div>
+<div class="bar">
+  <button id="prev" aria-label="Anterior">←</button>
+  <div class="dots" id="dots"></div>
+  <span class="muted" id="clock" style="font-size:13px;min-width:90px;text-align:right"></span>
+  <button id="next" aria-label="Siguiente">→</button>
+</div>
+</div>
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+const dots=document.getElementById('dots');
+slides.forEach((s,i)=>{const d=document.createElement('span');d.className='dot';dots.appendChild(d);
+  const t=document.createElement('span');t.className='time';t.textContent='⏱ '+s.dataset.t+' · '+(i+1)+'/'+slides.length;s.appendChild(t);});
+let i=0;
+function show(n){i=Math.max(0,Math.min(slides.length-1,n));
+  slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+  [...dots.children].forEach((d,k)=>d.classList.toggle('on',k===i));
+  document.getElementById('clock').textContent='objetivo '+slides[i].dataset.t;}
+document.getElementById('prev').onclick=()=>show(i-1);
+document.getElementById('next').onclick=()=>show(i+1);
+document.addEventListener('keydown',e=>{
+  if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(i+1);}
+  if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();show(i-1);}
+});
+show(0);
+</script>
+</body>
+</html>
